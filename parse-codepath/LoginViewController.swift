@@ -31,28 +31,15 @@ class LoginViewController: UIViewController {
     func validate() {
         
         let alertController = UIAlertController(title: "Missing Fields", message: "Username and password are required.", preferredStyle: .alert)
-        
-//        let cancelAction = UIAlertAction(title: "OK", style: .cancel) { (action) in
-//            // handle cancel response here. Doing nothing will dismiss the view.
-//        }
-//        
-//        // add the cancel action to the alertController
-//        alertController.addAction(cancelAction)
-        
         // create an OK action
-        let okAction = UIAlertAction(title: "OK", style: .default) { (action) in
-            // handle response here.
-        }
-        
-        // add the OK action to the alert controller
+        let okAction = UIAlertAction(title: "OK", style: .default)
+        // add the OK action to the alert controllers
         alertController.addAction(okAction)
         
         
         if emailTextField.text == "" || passwordTextField.text == "" {
            
-           present(alertController, animated: true, completion: {
-                // optional code for what happens after the alert controller has finished presenting
-           })
+           present(alertController, animated: true)
             
         }
         
@@ -62,6 +49,20 @@ class LoginViewController: UIViewController {
         PFUser.logInWithUsername(inBackground: username, password: password) { (user, error) in
             if let error = error {
                 print ("error: \(error.localizedDescription)")
+                
+                let alertControllerText: String
+                if error.localizedDescription == "Invalid username/password." {
+                    alertControllerText = "User not registered."
+                } else {
+                    alertControllerText = "Something went wrong. Try again later."
+                }
+                let alertController = UIAlertController(title: "Error", message: alertControllerText, preferredStyle: .alert)
+                // create an OK action
+                let okAction = UIAlertAction(title: "OK", style: .default)
+                // add the OK action to the alert controllers
+                alertController.addAction(okAction)
+                
+                self.present(alertController, animated: true)
             } else {
                 print ("Signed in user \(username)")
                 print (user)
@@ -85,6 +86,13 @@ class LoginViewController: UIViewController {
         user.username = username
         user.password = password
         print("after validate")
+        
+        // Modal to let user know they signed up successfully
+        let signupCompletionController = UIAlertController(title: "Signup Complete!", message: "You are now signed up as \(username). Sign in to see messages", preferredStyle: .alert)
+        // Add button
+        let okAction = UIAlertAction(title: "OK", style: .default)
+        // add the OK action to the alert controllers
+        signupCompletionController.addAction(okAction)
 
         // Email optional
         // Other fields can be set just like with PFObject
@@ -96,9 +104,7 @@ class LoginViewController: UIViewController {
                 print ("error: \(error.localizedDescription)")
             } else {
                 // User is signed up. Let the use app now.
-                print ("Signed up user \(username). Now signing in.")
-                self.signIn(username: username, password: password)
-                
+                self.present(signupCompletionController, animated: true)
             }
         }
     }
